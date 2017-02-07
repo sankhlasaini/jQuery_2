@@ -71,6 +71,7 @@ $(function ()
 
 	//On Page load
 	home();
+
 	var sortID=1;
 	//Sort BY ID
 	$('#sortByID').on('click',function ()
@@ -152,6 +153,7 @@ $(function ()
 			sortName=0;
 		}
 	});
+
 	//Sort By Type
 	var sortType=1;
 	$('#sortByType').on('click',function ()
@@ -190,6 +192,7 @@ $(function ()
 		}
 	});
 
+	//Home Btn Working
 	$('#homeBtn').on('click',function ()
 	{
 		min = 0;
@@ -261,7 +264,7 @@ $(function ()
 		{
 			alert('Year should be an number');
 		}
-		else if(year<1990 || year>=(new Date().getFullYear()))
+		else if(year<1990 || year>(new Date().getFullYear()))
 		{
 			alert('Year Not allowed');
 		}
@@ -294,8 +297,7 @@ $(function ()
 		}
 	})
 
-	var oldName,oldImdb,oldYear,oldType;
-
+	
 	//Edit Button Working
 	tableData.delegate('.editBtn','click',function () 
 	{
@@ -306,17 +308,17 @@ $(function ()
 		oldImdb = ($(this).closest('tr').find('td:eq(4)').text());
 		
 		var newTr =	'<tr id="editTr">'
-		+'<td class="col-xs-3"><input type="text" class="form-control" id="editName" value='
-		+oldName+' placeholder="Name"></td>'
-		+'<td class="col-xs-3"><input type="text" class="form-control" id="editType" value='
-		+oldType+' placeholder="Type"></td>'
+		+'<td class="col-xs-3"><input type="text" class="form-control" id="editName" value="'
+		+oldName+'" placeholder="Name"></td>'
+		+'<td class="col-xs-3"><input type="text" class="form-control" id="editType" value="'
+		+oldType+'" placeholder="Type"></td>'
 		+'<td class="col-xs-2"><input type="text" class="form-control" id="editYear" value='
-		+oldYear+' placeholder="Year"></td>'
+		+(+oldYear)+' placeholder="Year"></td>'
 		+'<td class="col-xs-2">'
 		+oldImdb+'</td>'
 		+'<td class="col-xs-2"><button id="save" class="btn btn-success saveBtn glyphicon glyphicon-ok"></button>'
 		+'<button id="close" class="btn btn-danger closeBtn glyphicon glyphicon-remove"></button></td></tr>';
-
+		
 		var newName ='';
 		var newType ='';
 		var newYear =''; 
@@ -346,43 +348,47 @@ $(function ()
 			newName = $('#editName').val();
 			newYear = $('#editYear').val();
 			newType = $('#editType').val();
-			if($('#editName').val()=='')
-			{	
-				newName = oldName;
-			}
-			if($('#editYear').val()=='')
-			{	
-				newYear = oldYear;
-			}
-			if($('#editType').val()=='')
-			{	
-				newType = oldType;
-			}
-
-			var newShowTr =	('<tr class="dataRow"><td style="display:none;"></td><td>'
-				+newName+'</td><td>'+newType
-				+'</td><td>'+newYear+'</td><td>'+oldImdb
-				+'</td><td><button id="edit" class="btn btn-info editBtn glyphicon glyphicon-edit"></button>'
-				+'<button class="btn btn-danger delBtn glyphicon glyphicon-trash"></button></td></tr>');
-
-			$(this).parent().parent().replaceWith(newShowTr);
-			editMovie =
+			console.log(newType);
+			
+			if(newName=='' || newYear==''||newType=='')
 			{
-				Title : newName,
-				Year : newYear,
-				id : oldImdb,
-				Type : newType,
-			};
-			$.ajax({
-				type: "PUT",
-				url:'http://localhost:3000/Search/'+oldImdb,
-				data:editMovie,
+				alert('Please Fill all Fields');
+			}
+			else if(isNaN(newYear))
+			{
+				alert('Year should be an number');
+			}
+			else if(newYear<1990 || newYear>(new Date().getFullYear()))
+			{
+				alert('Year Not allowed');
+			}
+			else
+			{
+				var newShowTr =	('<tr class="dataRow"><td style="display:none;"></td><td>'
+					+newName+'</td><td>'+newType
+					+'</td><td>'+newYear+'</td><td>'+oldImdb
+					+'</td><td><button id="edit" class="btn btn-info editBtn glyphicon glyphicon-edit"></button>'
+					+'<button class="btn btn-danger delBtn glyphicon glyphicon-trash"></button></td></tr>');
 
-				success:function(data) 
+				$(this).parent().parent().replaceWith(newShowTr);
+				editMovie =
 				{
-					alert("Updated : "+oldImdb);
-				}
-			});
+					Title : newName,
+					Year : newYear,
+					id : oldImdb,
+					Type : newType,
+				};
+				$.ajax({
+					type: "PUT",
+					url:'http://localhost:3000/Search/'+oldImdb,
+					data:editMovie,
+
+					success:function(data) 
+					{
+						alert("Updated : "+oldImdb);
+					}
+				});
+			}
 		});
 	})
 
@@ -413,65 +419,65 @@ $(function ()
 		var searchInput = $('#searchInput').val();
 
 		if(searchInput==''){}
-		else
-		{
-			if(searchBy=='ID')
+			else
 			{
-				$.ajax({
-					type:'GET',
-					url:'http://localhost:3000/Search/'+searchInput,
-					error: function (xhr) {
-						alert('Sorry No Records Found');
-					},
-					success:function(data) 
-					{
-						tableData.empty();
-						$('#bottomContent').hide();
-						$('#sortByID').hide();
-						$('#sortByType').hide();
-						$('#sortByName').hide();
-						$('#sortByYear').hide();
+				if(searchBy=='ID')
+				{
+					$.ajax({
+						type:'GET',
+						url:'http://localhost:3000/Search/'+searchInput,
+						error: function (xhr) {
+							alert('Sorry No Records Found');
+						},
+						success:function(data) 
+						{
+							tableData.empty();
+							$('#bottomContent').hide();
+							$('#sortByID').hide();
+							$('#sortByType').hide();
+							$('#sortByName').hide();
+							$('#sortByYear').hide();
 
-						tableData.append('<tr class="dataRow"><td style="display:none;"></td><td >'
-							+data.Title+'</td><td>'+data.Type
-							+'</td><td>'+data.Year+'</td><td>'+data.id
-							+'</td><td><button id="edit" class="btn btn-info editBtn glyphicon glyphicon-edit"></button>'
-							+'<button class="btn btn-danger delBtn glyphicon glyphicon-trash"></button></td></tr>');
-					}
-				});
-			}	
-			else if(searchBy=='Name')
-			{
-				$('#sortByID').show();
-				$('#sortByType').show();
-				$('#sortByName').show();
-				$('#sortByYear').show();
-				var mydata = allRecords;
-				$('#pageDetail').empty();
-				var recordFound = [];
-				$.each(mydata, function( index, value ) 
+							tableData.append('<tr class="dataRow"><td style="display:none;"></td><td >'
+								+data.Title+'</td><td>'+data.Type
+								+'</td><td>'+data.Year+'</td><td>'+data.id
+								+'</td><td><button id="edit" class="btn btn-info editBtn glyphicon glyphicon-edit"></button>'
+								+'<button class="btn btn-danger delBtn glyphicon glyphicon-trash"></button></td></tr>');
+						}
+					});
+				}	
+				else if(searchBy=='Name')
 				{
-					if(value.Title==undefined)
+					$('#sortByID').show();
+					$('#sortByType').show();
+					$('#sortByName').show();
+					$('#sortByYear').show();
+					var mydata = allRecords;
+					$('#pageDetail').empty();
+					var recordFound = [];
+					$.each(mydata, function( index, value ) 
 					{
-						console.log(value.id);
-					}
-					else if(value.Title.toLowerCase().split(' ')[0]==searchInput.toLowerCase())
+						if(value.Title==undefined)
+						{
+							console.log(value.id);
+						}
+						else if(value.Title.toLowerCase().split(' ')[0]==searchInput.toLowerCase())
+						{
+							recordFound.push(value);
+						}
+					});
+					if(recordFound.length==0)
 					{
-						recordFound.push(value);
+						alert('Sorry No Record Found Try Proper Name');
 					}
-				});
-				if(recordFound.length==0)
-				{
-					alert('Sorry No Record Found Try Proper Name');
-				}
-				else
-				{
-					min = 0;
-					max = records+min;
-					allRecords = recordFound;
-					display10Record();
+					else
+					{
+						min = 0;
+						max = records+min;
+						allRecords = recordFound;
+						display10Record();
+					}
 				}
 			}
-		}
-	});
+		});
 });
